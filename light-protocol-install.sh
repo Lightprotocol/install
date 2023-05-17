@@ -4,9 +4,12 @@ set -eux
 
 PREFIX=${HOME}/.local/light-protocol
 PROMPT=true
+TOOLCHAIN=true
+LIGHT_PROTOCOL_PROGRAMS=true
 ARCH=$(uname -m)
 SOLANA_VERSION="v1.15.2"
 ANCHOR_VERSION="v0.27.2"
+LIGHT_PROTOCOL_VERSION="v0.3.0"
 
 function download_file () {
     local git_repo=$1
@@ -33,20 +36,28 @@ function download_and_extract () {
 }
 
 while (( "$#" )); do
-  case "$1" in
-    --prefix)
-      PREFIX="$2"
-      shift 2
-      ;;
-    --no-prompt)
-      PROMPT=false
-      shift
-      ;;
-    *)
-      echo "Error: Invalid option"
-      exit 1
-      ;;
-  esac
+    case "$1" in
+        --prefix)
+            PREFIX="$2"
+            shift 2
+            ;;
+        --no-prompt)
+            PROMPT=false
+            shift
+            ;;
+        --skip-toolchain)
+            TOOLCHAIN=false
+            shift
+            ;;
+        --skip-light-protocol-programs)
+            LIGHT_PROTOCOL_PROGRAMS=false
+            shift
+            ;;
+        *)
+            echo "Error: Invalid option"
+            exit 1
+            ;;
+    esac
 done
 
 if ! rustup toolchain list 2>/dev/null | grep -q "nightly"; then
@@ -76,37 +87,62 @@ echo "Detected system $SYSTEM"
 echo "Creating directory $PREFIX"
 mkdir -p $PREFIX/bin/deps
 
-echo "Downloading Solana toolchain"
+if [[ "$TOOLCHAIN" == true ]]; then
+    echo "Downloading Solana toolchain"
 
-download_and_extract \
-    solana \
-    ${SOLANA_VERSION} \
-    solana-${SYSTEM}.tar.zst \
-    ${PREFIX}/bin
-download_and_extract \
-    solana \
-    ${SOLANA_VERSION} \
-    solana-sdk-sbf-${SYSTEM}.tar.zst \
-    ${PREFIX}/bin
-download_and_extract \
-    solana \
-    ${SOLANA_VERSION} \
-    solana-deps-${SYSTEM}.tar.zst \
-    ${PREFIX}/bin/deps
+    download_and_extract \
+        solana \
+        ${SOLANA_VERSION} \
+        solana-${SYSTEM}.tar.zst \
+        ${PREFIX}/bin
+    download_and_extract \
+        solana \
+        ${SOLANA_VERSION} \
+        solana-sdk-sbf-${SYSTEM}.tar.zst \
+        ${PREFIX}/bin
+    download_and_extract \
+        solana \
+        ${SOLANA_VERSION} \
+        solana-deps-${SYSTEM}.tar.zst \
+        ${PREFIX}/bin/deps
 
-download_file \
-    anchor \
-    ${ANCHOR_VERSION} \
-    light-anchor-${SYSTEM} \
-    light-anchor \
-    ${PREFIX}/bin
+    echo "Downloading Light Anchor"
+    download_file \
+        anchor \
+        ${ANCHOR_VERSION} \
+        light-anchor-${SYSTEM} \
+        light-anchor \
+        ${PREFIX}/bin
+fi
+
+if [[ "$LIGHT_PROTOCOL_PROGRAMS" == true ]]; then
+    mkdir -p $PREFIX/lib/light-protocol
+
+    echo "Downloading Light Protocol programs"
+
+    files=(
+        merkle_tree_program.so
+        verifier_program_zero.so
+        verifier_program_storage.so
+        verifier_program_one.so
+        verifier_program_two.so
+    )
+    for file in "${files[@]}"; do
+        download_file \
+            light-protocol \
+            ${LIGHT_PROTOCOL_VERSION} \
+            $file \
+            $file \
+            ${PREFIX}/lib/light-protocol
+    done
+fi
 
 echo
 echo "Light Protocol toolchain installed"
 echo "$PREFIX/bin needs to be added to \$PATH in your shell configuration."
 echo
 
-if [ "$PROMPT" = true ]; then
+if [[ "$PROMPT" == true ]]; then
     read -p "Do you want to automatically add it to your Bash profile (~/.profile)? (y/n) " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]
