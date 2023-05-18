@@ -9,6 +9,8 @@ LIGHT_PROTOCOL_PROGRAMS=true
 ARCH=$(uname -m)
 SOLANA_VERSION="v1.15.2"
 ANCHOR_VERSION="v0.27.0"
+CIRCOM_VERSION="v2.1.5"
+MACRO_CIRCOM_VERSION="v0.1.1"
 LIGHT_PROTOCOL_VERSION="v0.3.0"
 
 function download_file () {
@@ -112,6 +114,22 @@ if [[ "$TOOLCHAIN" == true ]]; then
         ${ANCHOR_VERSION} \
         light-anchor-${SYSTEM} \
         light-anchor \
+        ${PREFIX}/bin
+
+    echo "Downloading Circom"
+    download_file \
+        circom \
+        ${CIRCOM_VERSION} \
+        circom-${SYSTEM} \
+        circom \
+        ${PREFIX}/bin
+
+    echo "Downloading macro-circom"
+    download_file \
+        macro-circom \
+        ${MACRO_CIRCOM_VERSION} \
+        macro-circom-${SYSTEM} \
+        macro-circom \
         ${PREFIX}/bin
 fi
 
