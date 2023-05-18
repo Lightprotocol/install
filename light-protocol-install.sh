@@ -1,17 +1,25 @@
 #!/bin/bash
 
-set -eux
+set -eu
 
 PREFIX=${HOME}/.local/light-protocol
 PROMPT=true
 TOOLCHAIN=true
 LIGHT_PROTOCOL_PROGRAMS=true
 ARCH=$(uname -m)
-SOLANA_VERSION="v1.15.2"
-ANCHOR_VERSION="v0.27.0"
-CIRCOM_VERSION="v2.1.5"
-MACRO_CIRCOM_VERSION="v0.1.1"
-LIGHT_PROTOCOL_VERSION="v0.3.0"
+
+function latest_release() {
+    local OWNER="$1"
+    local REPO="$2"
+    local GITHUB="https://api.github.com"
+
+    local LATEST_RELEASE=$(curl -s $GITHUB/repos/$OWNER/$REPO/releases/latest)
+
+    # Extract the tag name
+    local TAG_NAME=$(echo "$LATEST_RELEASE" | grep -Po '"tag_name": "\K.*?(?=")' | head -1)
+
+    echo "$TAG_NAME"
+}
 
 function download_file () {
     local git_repo=$1
@@ -36,6 +44,12 @@ function download_and_extract () {
     echo "Downloading ${archive_name}"
     curl -L https://github.com/Lightprotocol/${git_repo}/releases/download/${git_release}/${archive_name} | tar -I zstd -xvf - -C ${dest}
 }
+
+SOLANA_VERSION=$(latest_release Lightprotocol solana)
+ANCHOR_VERSION=$(latest_release Lightprotocol anchor)
+CIRCOM_VERSION=$(latest_release Lightprotocol circom)
+MACRO_CIRCOM_VERSION=$(latest_release Lightprotocol macro-circom)
+LIGHT_PROTOCOL_VERSION=$(latest_release Lightprotocol light-protocol)
 
 while (( "$#" )); do
     case "$1" in
