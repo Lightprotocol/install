@@ -16,7 +16,7 @@ function latest_release() {
     local LATEST_RELEASE=$(curl -s $GITHUB/repos/$OWNER/$REPO/releases/latest)
 
     # Extract the tag name
-    local TAG_NAME=$(echo "$LATEST_RELEASE" | grep -Po '"tag_name": "\K.*?(?=")' | head -1)
+    local TAG_NAME=$(echo "$LATEST_RELEASE" | perl -ne 'print "$1\n" if /"tag_name":\s*"([^"]*)"/' | head -1)
 
     echo "$TAG_NAME"
 }
