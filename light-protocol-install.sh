@@ -42,7 +42,8 @@ function download_and_extract () {
     local dest=$4
 
     echo "Downloading ${archive_name}"
-    curl -L https://github.com/Lightprotocol/${git_repo}/releases/download/${git_release}/${archive_name} | tar -Jxf - -C ${dest}
+    curl -L https://github.com/Lightprotocol/${git_repo}/releases/download/${git_release}/${archive_name} | \
+        tar -zxf - -C ${dest}
 }
 
 SOLANA_VERSION=$(latest_release Lightprotocol solana)
@@ -109,17 +110,17 @@ if [[ "$TOOLCHAIN" == true ]]; then
     download_and_extract \
         solana \
         ${SOLANA_VERSION} \
-        solana-${SYSTEM}.tar.xz \
+        solana-${SYSTEM}.tar.gz \
         ${PREFIX}/bin
     download_and_extract \
         solana \
         ${SOLANA_VERSION} \
-        solana-sdk-sbf-${SYSTEM}.tar.xz \
+        solana-sdk-sbf-${SYSTEM}.tar.gz \
         ${PREFIX}/bin
     download_and_extract \
         solana \
         ${SOLANA_VERSION} \
-        solana-deps-${SYSTEM}.tar.xz \
+        solana-deps-${SYSTEM}.tar.gz \
         ${PREFIX}/bin/deps
 
     echo "Downloading Light Anchor"
