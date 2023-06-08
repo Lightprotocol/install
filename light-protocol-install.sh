@@ -4,7 +4,8 @@ set -eu
 
 PREFIX=${HOME}/.local/light-protocol
 PROMPT=true
-TOOLCHAIN=true
+SOLANA_TOOLCHAIN=true
+LIGHT_PROTOCOL_TOOLCHAIN=true
 LIGHT_PROTOCOL_PROGRAMS=true
 ARCH=$(uname -m)
 
@@ -62,8 +63,12 @@ while (( "$#" )); do
             PROMPT=false
             shift
             ;;
-        --skip-toolchain)
-            TOOLCHAIN=false
+        --skip-solana-toolchain)
+            SOLANA_TOOLCHAIN=false
+            shift
+            ;;
+        --skip-light-protocol-toolchain)
+            LIGHT_PROTOCOL_TOOLCHAIN=false
             shift
             ;;
         --skip-light-protocol-programs)
@@ -104,7 +109,7 @@ echo "Detected system $SYSTEM"
 echo "Creating directory $PREFIX"
 mkdir -p $PREFIX/bin/deps
 
-if [[ "$TOOLCHAIN" == true ]]; then
+if [[ "$SOLANA_TOOLCHAIN" == true ]]; then
     echo "Downloading Solana toolchain"
 
     download_and_extract \
@@ -122,7 +127,9 @@ if [[ "$TOOLCHAIN" == true ]]; then
         ${SOLANA_VERSION} \
         solana-deps-${SYSTEM}.tar.gz \
         ${PREFIX}/bin/deps
+fi
 
+if [[ "$LIGHT_PROTOCOL_TOOLCHAIN" == true ]]; then
     echo "Downloading Light Anchor"
     download_file \
         anchor \
